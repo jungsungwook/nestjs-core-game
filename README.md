@@ -1,73 +1,41 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# NestJS GAME SERVER (CORE)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 들어가기전
+***
+고등학교 때 지루한 C언어와 알고리즘을 공부하다가 옆자리 친구가 게임을 만들어 광고 수익을 내는 모습을 보고 
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+그 모습이 너무 부러워, 게임을 만드는 법을 구글에 열심히 친 결과 유니티 엔진에 대해 알게 되었다.
+(나중에 알게 된 사실이지만 그 친구는 cocos엔진을 사용하였다..) 
 
-## Description
+이후, 오로지 구글과 유니티 공식 Docs에 의존하여 허접한 게임을 만들었고.. 3만명이나 되는 다운로드 수를 기록한 처음이자 마지막으로 배포해본 게임이 되었다.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+그 이후 멀티 플레이를 지원하는 게임을 만들어보려 하였으나.. 당시 지식으로는 서버라는 개념이 너무나 어려웠고 대학교에 들어간 뒤 파이썬과 인공지능을 공부하며 서버와의 거리는 점점 멀어져만 갔는데..
 
-## Installation
+3학년 때 휴학을 하고 병역특례(산업기능요원)를 계기로 첫 회사에서 아무런 지식없이(요즘 친구들은 이걸 노베라고 한다고 함..) Node.js를 사용하여 API 서버를 개발하고 배포하였다.
 
-```bash
-$ npm install
-```
+이 후, 여려 회사를 옮기면서 (병역특례 이슈로..) JAVA SPRING과 Nestjs를 통해 백엔드 포지션에서 근무하며 어느 새 백엔드 개발자로 성장하게 되었고, 비로소 고등학교 때 목표했던 게임 서버를 만들고자 한다.
 
-## Running the app
+***
 
-```bash
-# development
-$ npm run start
+## 계획
 
-# watch mode
-$ npm run start:dev
+***
+게임서버는 웹서버 또는 API 서버와 다른 점이 몇몇 있다.
+예를 들면, Latency와 지연시간 차이에 신경을 써줘야 한다던가
+상황에 맞게 스레드와 프로세스를 사용하여 서버의 구조를 나누고 구획화한다던가.. 기존에 공부하고 개발했던 API서버와는 또 다른 모습이다.
 
-# production mode
-$ npm run start:prod
-```
+따라서 해당 프로젝트는 소켓통신을 통한 실시간 통신 게임 서버 라기보다는 이것저것 기능이 짬뽕된, 하지만 여러 방면에서 유용하게 쓰일 수 있는 게임 서버의 CORE를 작성해보고자 한다.
+***
 
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+## 기술스택
+***
+- NestJS
+    > Core 서버의 프레임워크로 사용 될 NestJS다. 3tier 계층의  구조를 갖고 MVC패턴을 적용할 계획이다.
+- MySQL
+    > 서버 자원을 저장할 DB이다.
+- Unity
+    > 서버와 통신할 클라이언트이다. 단, 해당 레파지토리에는 올리지 않을 계획이다.
+- Phaser
+    > 서버와 통신할 클라이언트이다. 마찬가지로 해당 레파지토리에는 올리지 않을 계획이다.
+- python & tensorflow
+    > 
