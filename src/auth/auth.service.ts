@@ -9,7 +9,6 @@ import * as bcrypt from 'bcryptjs';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { DefaultResponseDto } from './dto/default-response.dto';
 import { EntityManager } from 'typeorm';
-import { generateRandomString } from 'src/utils/commonUtils';
 
 @Injectable()
 export class AuthService {
