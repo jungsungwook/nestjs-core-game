@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { GatewayModule } from './gateways/gateway.module';
+import { GatewayModule } from './socket-gateways/gateway.module';
 
 @Module({
   imports: [GatewayModule],
