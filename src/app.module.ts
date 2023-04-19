@@ -1,13 +1,17 @@
 import { CacheModule, MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { GatewayModule } from './socket-gateways/gateway.module';
 import path from 'path';
+import { resolve } from 'path';
 import * as dotenv from 'dotenv';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { AuthTokenMiddleware } from './auth/authToken.middleware';
+import { UsersModule } from './pages/users/users.module';
+import { User } from './pages/users/user.entity';
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: resolve(__dirname, '../.env') });
+
 @Module({
   imports: [
     CacheModule.register(
@@ -29,10 +33,11 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
       password: process.env.DB_PASS,
       database: process.env.DB_DATABASE,
       timezone: 'Z',
-      entities: [],
+      entities: [User,],
       synchronize: true,
     }),
     GatewayModule,
+    UsersModule,
     AuthModule,
   ],
 })

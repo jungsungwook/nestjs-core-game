@@ -14,4 +14,10 @@ export class UsersService {
     const userObj =  await this.userRepository.findOne({where:{ customId: user.customId }});
     return {statusCode: '200', contents: userObj};
   }
+  async getUser(refreshToken: string) : Promise<{statusCode:string, contents:User}>{
+    const userObj =  await this.userRepository.findOne({
+      where:{ refreshToken: refreshToken }
+    });
+    return {statusCode: '200', contents: userObj};
+  }
 }

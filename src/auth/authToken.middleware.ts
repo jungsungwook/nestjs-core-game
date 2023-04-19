@@ -6,7 +6,7 @@ import { User } from 'src/pages/users/user.entity'
 
 @Injectable()
 export class AuthTokenMiddleware implements NestMiddleware {
-    public async use(req: Request, res: Response, next: () => void) {
+    public async use(req: any, res: Response, next: () => void) {
         req.user = await this.verifyUser(req)
         return next()
     }

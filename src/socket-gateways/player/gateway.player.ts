@@ -1,3 +1,4 @@
+import { InjectRepository } from '@nestjs/typeorm';
 import {
     ConnectedSocket,
     MessageBody,
@@ -6,6 +7,8 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { UsersController } from 'src/pages/users/users.controller';
+import { UsersService } from 'src/pages/users/users.service';
 
 /**
  * 본인의 캐릭터와 다른 플레이어의 캐릭터 정보를 주고 받는 게이트웨이
@@ -25,8 +28,17 @@ import { Server, Socket } from 'socket.io';
     },
 })
 export class PlayerGateway {
+    constructor(
+        private userService: UsersService,
+    ) {}
     @WebSocketServer()
     server: Server;
+
+    async handleConnection(client: Socket, ...args: any[]) {
+        const reqHeaders = client.handshake.headers;
+        const user = await this.userService.getUser(reqHeaders.refreshToken as string);
+        console.log(user)
+    }
 
     @SubscribeMessage('player')
     async handlePlayerData(
