@@ -36,8 +36,18 @@ export class PlayerGateway {
 
     async handleConnection(client: Socket, ...args: any[]) {
         const reqHeaders = client.handshake.headers;
-        const user = await this.userService.getUser(reqHeaders.refreshToken as string);
-        console.log(user)
+        try{
+            const user = await this.userService.getUser(reqHeaders.refreshToken as string);
+            if(user.statusCode == '404') throw new Error('User not found');
+            const userObj = user.contents;
+            const socketId = client.id;
+            const socketIdUpdate = await this.userService.socketIdUpdate(userObj, socketId);
+            if(socketIdUpdate.statusCode == '404') throw new Error('User not found');
+            console.log('PlayerGateway: ' + userObj.customId + ' connected');
+        }
+        catch(e){
+            client.disconnect();
+        }
     }
 
     @SubscribeMessage('player')
