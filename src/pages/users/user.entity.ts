@@ -39,4 +39,12 @@ export class User extends BaseEntity{
     @ApiProperty({description: '가입일', example: '2021-01-01 00:00:00'})
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;
+
+    @ApiProperty({description: '마지막 접속일', example: '2021-01-01 00:00:00'})
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    updatedAt: Date;
+
+    @ApiProperty({description: '접속 종료일', example: '2021-01-01 00:00:00'})
+    @Column({ type: 'timestamp', nullable: true })
+    exitAt: Date;
 }

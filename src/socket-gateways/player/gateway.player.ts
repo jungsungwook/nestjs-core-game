@@ -56,12 +56,9 @@ export class PlayerGateway {
     async handleDisconnect(client: Socket) {
         const reqHeaders = client.handshake.headers;
         try{
-            const user = await this.userService.getUser(reqHeaders.refresh_token as string, reqHeaders.custom_id as string);
-            if(user.statusCode == '404') throw new Error('User not found');
-            const userObj = user.contents;
-            const socketIdUpdate = await this.userService.socketIdUpdate(userObj, null);
+            const socketIdUpdate = await this.userService.disconnectSocketId(client.id);
             if(socketIdUpdate.statusCode == '404') throw new Error('User not found');
-            console.log('PlayerGateway: ' + userObj.customId + ' disconnected');
+            console.log('PlayerGateway: ' + socketIdUpdate.contents.customId + ' disconnected');
         }
         catch(e){
             client.disconnect();
