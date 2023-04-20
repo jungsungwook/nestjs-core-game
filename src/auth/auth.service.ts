@@ -54,8 +54,11 @@ export class AuthService {
 
         if(user && await bcrypt.compare(password, user.password)){
             const payload = { customId : user.customId };
-            const accessToken = await this.jwtService.sign(payload);
-            const refreshToken = await this.jwtService.sign({}, { 
+            const accessToken = await this.jwtService.sign(payload, {
+                secret: process.env.JWT_SECRET,
+                expiresIn: process.env.JWT_SECRET_EXPIRATION_TIME,
+            });
+            const refreshToken = await this.jwtService.sign({id: user.id}, { 
                 secret: process.env.JWT_REFRESH_TOKEN_SECRET,
                 expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
             });

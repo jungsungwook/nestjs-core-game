@@ -5,6 +5,7 @@ import { User } from './user.entity';
 import { UserRepository } from './user.repository';
 import { EntityManager } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class UsersService {
@@ -30,6 +31,14 @@ export class UsersService {
       refreshToken,
       userObj.refreshToken,
     );
+    const decode = await jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET, (err, decoded) => {
+      if(err){
+        return {statusCode: '404', contents: null};
+      }
+      return decoded;
+    });
+    console.log(decode)
+
     if(!isRefreshTokenMatching){
       return {statusCode: '404', contents: null};
     }

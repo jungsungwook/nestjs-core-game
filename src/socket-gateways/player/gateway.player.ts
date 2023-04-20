@@ -1,3 +1,4 @@
+import { Req } from '@nestjs/common';
 import {
     ConnectedSocket,
     MessageBody,
@@ -6,9 +7,7 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { TransactionManager } from 'src/decorators/TransactionManager.decorator';
 import { UsersService } from 'src/pages/users/users.service';
-import { EntityManager } from 'typeorm';
 
 /**
  * 본인의 캐릭터와 다른 플레이어의 캐릭터 정보를 주고 받는 게이트웨이
@@ -65,6 +64,11 @@ export class PlayerGateway {
         }
     }
 
+    /**
+     * 
+     * @Description
+     * 2Directional Movement (2D)를 처리하는 메소드
+     */
     @SubscribeMessage('move2d')
     async handleMove2d(
         @MessageBody() data,
