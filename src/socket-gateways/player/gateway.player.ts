@@ -38,7 +38,7 @@ export class PlayerGateway {
         const reqHeaders = client.handshake.headers;
         // if(!reqHeaders.refreshToken) throw new Error('No refreshToken');
         try{
-            const user = await this.userService.getUser(reqHeaders.refresh_token as string, reqHeaders.custom_id as string);
+            const user = await this.userService.getUser(reqHeaders.refresh_token as string);
             if(user.statusCode == '404') throw new Error('User not found');
             const userObj = user.contents;
             const socketId = client.id;

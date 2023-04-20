@@ -19,29 +19,23 @@ export class UsersService {
     return {statusCode: '200', contents: userObj};
   }
 
-  async getUser(refreshToken: string, customId: string) : Promise<{statusCode:string, contents:User}>{
+  async getUser(refreshToken: string) : Promise<{statusCode:string, contents:User}>{
+    const userId = await jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET, (err, decoded) => {
+      if(err){
+        return null;
+      }
+      return decoded['id'];
+    });
+
+    if(userId == null){
+      return {statusCode: '404', contents: null};
+    }
+
     const userObj =  await this.userRepository.createQueryBuilder("user")
       .select(["user.id", "user.customId", "user.name", "user.email", "user.role", "user.refreshToken", "user.socketId"])
-      .where('user.customId = :customId', { customId: customId })
+      .where('user.id = :id', { id: userId })
       .getOne();
-    if(!userObj){
-      return {statusCode: '404', contents: null};
-    }
-    const isRefreshTokenMatching = await bcrypt.compare(
-      refreshToken,
-      userObj.refreshToken,
-    );
-    const decode = await jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET, (err, decoded) => {
-      if(err){
-        return {statusCode: '404', contents: null};
-      }
-      return decoded;
-    });
-    console.log(decode)
 
-    if(!isRefreshTokenMatching){
-      return {statusCode: '404', contents: null};
-    }
     return {statusCode: '200', contents: userObj};
   }
 
