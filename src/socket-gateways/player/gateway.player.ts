@@ -1,3 +1,4 @@
+import { UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
     ConnectedSocket,
@@ -7,8 +8,11 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { TransactionInterceptor } from 'src/decorators/TransactionInterceptor.decorator';
+import { TransactionManager } from 'src/decorators/TransactionManager.decorator';
 import { UsersController } from 'src/pages/users/users.controller';
 import { UsersService } from 'src/pages/users/users.service';
+import { EntityManager } from 'typeorm';
 
 /**
  * 본인의 캐릭터와 다른 플레이어의 캐릭터 정보를 주고 받는 게이트웨이
@@ -21,6 +25,8 @@ import { UsersService } from 'src/pages/users/users.service';
  * @Memo
  * - 데드레커닝은 충돌체로 인한 위치 정보가 바뀌지 않을 때 사용하기에 적합하다.
  */
+
+@UseInterceptors(TransactionInterceptor)
 @WebSocketGateway(8080, { 
     transports: ['websocket'] ,
     cors: {
@@ -34,14 +40,17 @@ export class PlayerGateway {
     @WebSocketServer()
     server: Server;
 
-    async handleConnection(client: Socket, ...args: any[]) {
+    async handleConnection(client: Socket, @TransactionManager() queryRunnerManager:EntityManager) {
         const reqHeaders = client.handshake.headers;
+        console.log(client)
+        // if(!reqHeaders.refreshToken) throw new Error('No refreshToken');
         try{
-            const user = await this.userService.getUser(reqHeaders.refreshToken as string);
+            const user = await this.userService.getUser(reqHeaders.refreshToken as string, reqHeaders.customId as string, queryRunnerManager);
+            console.log(reqHeaders.refreshtoken as string)
             if(user.statusCode == '404') throw new Error('User not found');
             const userObj = user.contents;
             const socketId = client.id;
-            const socketIdUpdate = await this.userService.socketIdUpdate(userObj, socketId);
+            const socketIdUpdate = await this.userService.socketIdUpdate(userObj, socketId, queryRunnerManager);
             if(socketIdUpdate.statusCode == '404') throw new Error('User not found');
             console.log('PlayerGateway: ' + userObj.customId + ' connected');
         }
@@ -50,13 +59,28 @@ export class PlayerGateway {
         }
     }
 
-    @SubscribeMessage('player')
-    async handlePlayerData(
+    async handleDisconnect(client: Socket, @TransactionManager() queryRunnerManager:EntityManager) {
+        const reqHeaders = client.handshake.headers;
+        try{
+            const user = await this.userService.getUser(reqHeaders.refreshToken as string, reqHeaders.customId as string, queryRunnerManager);
+            if(user.statusCode == '404') throw new Error('User not found');
+            const userObj = user.contents;
+            const socketIdUpdate = await this.userService.socketIdUpdate(userObj, null, queryRunnerManager);
+            if(socketIdUpdate.statusCode == '404') throw new Error('User not found');
+            console.log('PlayerGateway: ' + userObj.customId + ' disconnected');
+        }
+        catch(e){
+            client.disconnect();
+        }
+    }
+
+    @SubscribeMessage('move2d')
+    async handleMove2d(
         @MessageBody() data,
         @ConnectedSocket() client: Socket,
     ) {
         const returnText = 'Server received: ' + data;
         console.log(returnText);
-        this.server.emit('returnPlayer', returnText);
+        this.server.emit('returnMove2d', returnText);
     }
 }
