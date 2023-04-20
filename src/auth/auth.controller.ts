@@ -61,7 +61,10 @@ export class AuthController {
             });
             return {
                 statusCode: result.statusCode,
-                contents: result.contents.accessToken,
+                contents: {
+                    accessToken: result.contents.accessToken,
+                    refreshToken: result.contents.refreshToken,
+                },
             };
         }catch(error){
             const result:DefaultResponseDto = new DefaultResponseDto();
