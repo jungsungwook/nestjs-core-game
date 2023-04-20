@@ -1,4 +1,3 @@
-import { Req } from '@nestjs/common';
 import {
     ConnectedSocket,
     MessageBody,
@@ -8,7 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/pages/users/users.service';
-
+import { BroadcastService } from 'src/pages/users/broadcast/broadcast.service';
 /**
  * 본인의 캐릭터와 다른 플레이어의 캐릭터 정보를 주고 받는 게이트웨이
  * @Todo
@@ -30,6 +29,7 @@ import { UsersService } from 'src/pages/users/users.service';
 export class PlayerGateway {
     constructor(
         private userService: UsersService,
+        private broadcastService: BroadcastService,
     ) {}
     @WebSocketServer()
     server: Server;
@@ -76,6 +76,6 @@ export class PlayerGateway {
     ) {
         const returnText = 'Server received: ' + data;
         console.log(returnText);
-        this.server.emit('returnMove2d', returnText);
+        this.broadcastService.serverBroadcast(this.server, 'returnMove2d', data);
     }
 }
