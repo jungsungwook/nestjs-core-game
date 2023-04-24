@@ -7,6 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/pages/users/users.service';
+import { Movement2dService } from 'src/movement2d/movement2d.service';
 import { BroadcastService } from 'src/pages/users/broadcast/broadcast.service';
 /**
  * 본인의 캐릭터와 다른 플레이어의 캐릭터 정보를 주고 받는 게이트웨이
@@ -65,17 +66,32 @@ export class PlayerGateway {
     }
 
     /**
-     * 
      * @Description
      * 2Directional Movement (2D)를 처리하는 메소드
+     * 키보드 입력을 받아서 처리함.
      */
-    @SubscribeMessage('move2d')
+    @SubscribeMessage('move2d_key')
     async handleMove2d(
         @MessageBody() data,
         @ConnectedSocket() client: Socket,
     ) {
         const returnText = 'Server received: ' + data;
         console.log(returnText);
-        this.broadcastService.serverBroadcast(this.server, 'returnMove2d', data);
+        this.broadcastService.serverBroadcast(this.server, 'returnMove2dKey', data);
+    }
+
+    /**
+     * @Description
+     * 2Directional Movement (2D)를 처리하는 메소드
+     * 이동 방향을 받아서 처리함.
+     */
+    @SubscribeMessage('move2d_direction')
+    async handleMove2dDirection(
+        @MessageBody() data,
+        @ConnectedSocket() client: Socket,
+    ) {
+        const returnText = 'Server received: ' + data;
+        console.log(returnText);
+        this.broadcastService.serverBroadcast(this.server, 'returnMove2dDirection', data);
     }
 }
