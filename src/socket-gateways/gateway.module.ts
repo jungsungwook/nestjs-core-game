@@ -5,6 +5,7 @@ import { UsersModule } from 'src/pages/users/users.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { BroadcastModule } from 'src/pages/users/broadcast/broadcast.module';
 import { Movement2dModule } from 'src/movement2d/movement2d.module';
+import { RedisCacheModule } from 'src/cache/redis.module';
 
 @Module({
     imports:[
@@ -12,6 +13,7 @@ import { Movement2dModule } from 'src/movement2d/movement2d.module';
         AuthModule,
         BroadcastModule,
         Movement2dModule,
+        RedisCacheModule,
     ],
     providers: [
         CoreGateway,

@@ -17,7 +17,7 @@ dotenv.config({ path: resolve(__dirname, '../.env') });
     CacheModule.register(
       {
         isGlobal: true,
-        ttl: 60, // seconds
+        ttl: 60*60*12, // seconds
         max: 1000, // maximum number of items in cache
       },
     ),
