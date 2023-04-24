@@ -80,17 +80,53 @@ export class PlayerGateway {
      */
     @SubscribeMessage('move2d_key')
     async handleMove2d(
-        @MessageBody() data,
+        @MessageBody() data : { key: string },
         @ConnectedSocket() client: Socket,
     ) {
         try{
             const userCustomId = await this.redisService.get(client.id);
             if(!userCustomId) throw new Error('User not found');
-            const result = await this.movemoent2dService.move2d_key(this.server, 'returnMove2dKey', userCustomId, data.key);
+            if(!data.key) throw new Error('Key not found');
+
+            const { x, y } = await this.redisService.get(userCustomId + "_position");
+            if (!x || !y) {
+                const rand_session_id = Math.random().toString(36).substr(2, 11);
+                client.emit("request_position", userCustomId + "_" + rand_session_id);
+                await this.redisService.set(userCustomId + "_" + rand_session_id, { clientId: client.id, key: data.key});
+                return;
+            }
+
+            await this.movemoent2dService.move2d_key(this.server, 'returnMove2dKey', userCustomId, data.key);
         }catch(e){
-            client.disconnect();
+            client.emit('error', e.message);
         }
-        
+    }
+
+    /**
+     * @Description
+     * 클라이언트로부터 본인의 위치 정보를 받아서 처리하는 메소드.
+     * request 전용.
+     */
+    @SubscribeMessage('response_position_key')
+    async handlePlayerPosition(
+        @MessageBody() data: { x: number, y: number, session_id: string},
+        @ConnectedSocket() client: Socket,
+    ) {
+        try{
+            const userCustomId = await this.redisService.get(client.id);
+            if(!userCustomId) throw new Error('User not found');
+            if(!data.x || !data.y) throw new Error('Position not found');
+            if(!data.session_id) throw new Error('Session id not found');
+            const session_data = await this.redisService.get(userCustomId+"_"+data.session_id);
+            if(session_data.clientId != client.id) throw new Error('Invalid session');
+            await this.redisService.set(userCustomId + "_position", { x: data.x, y: data.y });
+            const key = session_data.key;
+            await this.movemoent2dService.move2d_key(this.server, 'returnMove2dKey', userCustomId, key);
+            await this.redisService.del(userCustomId+"_"+data.session_id);
+
+        }catch(e){
+            client.emit('error', e.message);
+        }
     }
 
     /**
@@ -100,15 +136,16 @@ export class PlayerGateway {
      */
     @SubscribeMessage('move2d_direction')
     async handleMove2dDirection(
-        @MessageBody() data,
+        @MessageBody() data: { direction: string },
         @ConnectedSocket() client: Socket,
     ) {
         try{
             const userCustomId = await this.redisService.get(client.id);
             if(!userCustomId) throw new Error('User not found');
-            const result = await this.movemoent2dService.move2d_direction(this.server, 'returnMove2dKey', userCustomId, data.direction);
+            if(!data.direction) throw new Error('Direction not found');
+            await this.movemoent2dService.move2d_direction(this.server, 'returnMove2dDirection', userCustomId, data.direction);
         }catch(e){
-            client.disconnect();
+            client.emit('error', e.message);
         }
     }
 }
