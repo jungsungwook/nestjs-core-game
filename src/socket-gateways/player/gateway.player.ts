@@ -87,15 +87,13 @@ export class PlayerGateway {
             const userCustomId = await this.redisService.get(client.id);
             if(!userCustomId) throw new Error('User not found');
             if(!data.key) throw new Error('Key not found');
-
-            const { x, y } = await this.redisService.get(userCustomId + "_position");
-            if (!x || !y) {
+            const pos = await this.redisService.get(userCustomId + "_position");
+            if (!pos||!pos.hasOwnProperty('x')||!pos.hasOwnProperty('y')||pos.x==undefined||pos.y==undefined) {
                 const rand_session_id = Math.random().toString(36).substr(2, 11);
                 client.emit("request_position", userCustomId + "_" + rand_session_id);
                 await this.redisService.set(userCustomId + "_" + rand_session_id, { clientId: client.id, key: data.key});
                 return;
             }
-
             await this.movemoent2dService.move2d_key(this.server, 'returnMove2dKey', userCustomId, data.key);
         }catch(e){
             client.emit('error', e.message);
@@ -117,12 +115,12 @@ export class PlayerGateway {
             if(!userCustomId) throw new Error('User not found');
             if(!data.x || !data.y) throw new Error('Position not found');
             if(!data.session_id) throw new Error('Session id not found');
-            const session_data = await this.redisService.get(userCustomId+"_"+data.session_id);
-            if(session_data.clientId != client.id) throw new Error('Invalid session');
+            const session_data = await this.redisService.get(data.session_id);
+            if(!session_data||session_data.clientId != client.id) throw new Error('Invalid session');
             await this.redisService.set(userCustomId + "_position", { x: data.x, y: data.y });
             const key = session_data.key;
             await this.movemoent2dService.move2d_key(this.server, 'returnMove2dKey', userCustomId, key);
-            await this.redisService.del(userCustomId+"_"+data.session_id);
+            await this.redisService.del(data.session_id);
 
         }catch(e){
             client.emit('error', e.message);
