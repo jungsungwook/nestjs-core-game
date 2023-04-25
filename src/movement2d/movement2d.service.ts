@@ -16,34 +16,80 @@ export class Movement2dService {
      * @param server 
      * @param channel 
      * @param userCustomId
-     * @param key 
+     * @param key
+     * @param isUp
      */
-    async move2d_key(server: Server, channel: string, userCustomId: any, key:any) {
+    async move2d_key(server: Server, channel: string, userCustomId: any, key:any, isUp: boolean) {
         try {
             const { x, y } = await this.redisService.get(userCustomId+"_position");
             let newX = x;
             let newY = y;
-            switch (key) {
-                case 'w':
-                    newY += 1;
-                    break;
-                case 'a':
-                    newX -= 1;
-                    break;
-                case 's':
-                    newY -= 1;
-                    break;
-                case 'd':
-                    newX += 1;
-                    break;
-                default:
-                    break;
+            if(!isUp){
+                // 전체 사용자들에게 이동을 알림. (현재 위치, 이동 방향, 이동 속도)
+                // 서버에서도 이동을 계산해서 위치를 업데이트.
+                const already = await this.redisService.get(userCustomId+"_interval");
+                if(already) return;
+                
+                const interval = setInterval(this.calculatePosition, 100, this.redisService, server, "position_start_test", userCustomId, key, isUp, newX ,newY, 1);
+                await this.redisService.set(userCustomId+"_interval", interval[Symbol.toPrimitive]() as number);
+                server.emit("position_start",{
+                    player: userCustomId,
+                    x: newX,
+                    y: newY,
+                    direction: key,
+                    speed: 1
+                })
+            }else{
+                // 전체 사용자들에게 이동이 멈춤을 알림.( 서버에서 계산된 위치 )
+                // 서버에서도 이동을 계산해서 위치를 업데이트.
+                const interval : number = await this.redisService.get(userCustomId+"_interval");
+                clearInterval(interval);
+                
+                await this.redisService.set(userCustomId+"_interval_list", []);
+                server.emit("position_stop",{
+                    player: userCustomId,
+                    x: newX,
+                    y: newY,
+                    speed: 0
+                })
+
             }
             await this.redisService.set(userCustomId+"_position", { x: newX, y: newY });
+        } catch (e) {
+            throw new Error(e);
+        }
+    }
+
+    async calculatePosition(redisService: RedisCacheService ,server: Server, channel: string, userCustomId: any, key:any, isUp: boolean, speed: number) {
+        try {
+            const { x, y } = await redisService.get(userCustomId+"_position");
+            let newX = x;
+            let newY = y;
+            if(!isUp){
+                switch (key) {
+                    case "s":
+                        newY -= speed;
+                        break;
+                    case "w":
+                        newY += speed;
+                        break;
+                    case "a":
+                        newX -= speed;
+                        break;
+                    case "d":
+                        newX += speed;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            await redisService.set(userCustomId+"_position", { x: newX, y: newY });
             server.emit(channel, {
                 player: userCustomId,
                 x: newX,
-                y: newY
+                y: newY,
+                direction: key,
+                speed: speed
             });
         } catch (e) {
             throw new Error(e);

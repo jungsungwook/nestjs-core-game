@@ -99,7 +99,7 @@ export class AuthController {
     }
 
     @Get('/refresh')
-    @ApiOperation({summary: 'Refresh Token 으로 AccessToken 발급', description: 'Refresh Token 으로 AccessToken 발급'})
+    @ApiOperation({summary: 'Refresh Token 으로 AccessToken 발급', description: '헤더인경우 refresh_token, 쿠키인 경우 Refresh'})
     @ApiResponse({description: '로그인 성공', type: DefaultResponseDto})
     @ApiResponse({description: '로그인 실패', type: ErrorResponseDto , status: 401})
     @UseGuards(AuthGuard('jwt-refresh-token'))

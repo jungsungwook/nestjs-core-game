@@ -19,6 +19,7 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document);
   
   app.useWebSocketAdapter(new IoAdapter(app));
+  app.enableCors();
   await app.listen(3000);
 }
 bootstrap();

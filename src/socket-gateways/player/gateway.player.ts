@@ -10,6 +10,7 @@ import { UsersService } from 'src/pages/users/users.service';
 import { Movement2dService } from 'src/movement2d/movement2d.service';
 import { BroadcastService } from 'src/pages/users/broadcast/broadcast.service';
 import { RedisCacheService } from 'src/cache/redis.service';
+import { generateSessionId } from 'src/utils/util';
 /**
  * 본인의 캐릭터와 다른 플레이어의 캐릭터 정보를 주고 받는 게이트웨이
  * @Todo
@@ -39,6 +40,15 @@ export class PlayerGateway {
     server: Server;
 
     async handleConnection(client: Socket) {
+        // const test = setInterval(async () => {
+        //     console.log('ping');
+        // }, 1000);
+        // const testId = test[Symbol.toPrimitive]() as number;
+        // console.log(testId)
+        // const end = setTimeout(async () => {
+        //     clearInterval(testId);
+        //     console.log('pong');
+        // }, 5000);
         const reqHeaders = client.handshake.headers;
         // if(!reqHeaders.refreshToken) throw new Error('No refreshToken');
         try{
@@ -80,21 +90,22 @@ export class PlayerGateway {
      */
     @SubscribeMessage('move2d_key')
     async handleMove2d(
-        @MessageBody() data : { key: string },
+        @MessageBody() data : { key: string, isUp: boolean, timestamp: number },
         @ConnectedSocket() client: Socket,
     ) {
         try{
             const userCustomId = await this.redisService.get(client.id);
             if(!userCustomId) throw new Error('User not found');
             if(!data.key) throw new Error('Key not found');
+            if(data.isUp == undefined) throw new Error('isUp not found');
             const pos = await this.redisService.get(userCustomId + "_position");
             if (!pos||!pos.hasOwnProperty('x')||!pos.hasOwnProperty('y')||pos.x==undefined||pos.y==undefined) {
-                const rand_session_id = Math.random().toString(36).substr(2, 11);
+                const rand_session_id = generateSessionId();
                 client.emit("request_position", userCustomId + "_" + rand_session_id);
-                await this.redisService.set(userCustomId + "_" + rand_session_id, { clientId: client.id, key: data.key});
+                await this.redisService.set(userCustomId + "_" + rand_session_id, { clientId: client.id, key: data.key, isUp: data.isUp, timestamp: data.timestamp});
                 return;
             }
-            await this.movemoent2dService.move2d_key(this.server, 'returnMove2dKey', userCustomId, data.key);
+            await this.movemoent2dService.move2d_key(this.server, 'returnMove2dKey', userCustomId, data.key, data.isUp);
         }catch(e){
             client.emit('error', e.message);
         }
@@ -119,7 +130,8 @@ export class PlayerGateway {
             if(!session_data||session_data.clientId != client.id) throw new Error('Invalid session');
             await this.redisService.set(userCustomId + "_position", { x: data.x, y: data.y });
             const key = session_data.key;
-            await this.movemoent2dService.move2d_key(this.server, 'returnMove2dKey', userCustomId, key);
+            const isUp = session_data.isUp;
+            await this.movemoent2dService.move2d_key(this.server, 'returnMove2dKey', userCustomId, key, isUp);
             await this.redisService.del(data.session_id);
 
         }catch(e){

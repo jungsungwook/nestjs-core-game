@@ -22,4 +22,9 @@ export class CoreGateway {
         console.log(returnText);
         this.server.emit('ServerToClient', returnText);
     }
+
+    @SubscribeMessage('ping')
+    async handlePing(@MessageBody() data) {
+        this.server.emit('pong', 'pong');
+    }
 }
