@@ -45,7 +45,7 @@ export class Movement2dService {
                 const interval : number = await this.redisService.get(userCustomId+"_interval");
                 clearInterval(interval);
                 
-                await this.redisService.set(userCustomId+"_interval_list", []);
+                await this.redisService.del(userCustomId+"_interval");
                 server.emit("position_stop",{
                     player: userCustomId,
                     x: newX,
