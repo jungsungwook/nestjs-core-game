@@ -29,13 +29,14 @@ export class ChatGateWay {
             if(!userCustomId) throw new Error('User not found');
 
             if(!data.message) throw new Error('Message is undefined');
+            if(data.message.replace(/\s/g, '').length == 0) throw new Error('Message is empty');
             if(data.message.length > 100) throw new Error('Message is too long');
-            if(data.message == '') throw new Error('Message is empty');
             
             const returnObj = {
                 type:"message",
                 message: data.message,
                 sender: userCustomId,
+                timestamp: new Date().getTime(),
             }
             this.server.emit('receive_chat', returnObj);
         } catch (err) {
