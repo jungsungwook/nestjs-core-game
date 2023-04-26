@@ -38,6 +38,9 @@ export class ChatGateWay {
                 sender: userCustomId,
                 timestamp: new Date().getTime(),
             }
+            const chatLog: Object[] = await this.redisService.get('chatLog');
+            await this.redisService.set('chatLog', [...chatLog, returnObj]);
+            
             this.server.emit('receive_chat', returnObj);
         } catch (err) {
             client.emit('error', err.message);
