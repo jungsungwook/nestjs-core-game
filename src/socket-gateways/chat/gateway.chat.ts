@@ -1,7 +1,7 @@
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { RedisCacheService } from "src/cache/redis.service";
-import { BroadcastService } from "src/pages/users/broadcast/broadcast.service";
+import { BroadcastService } from "src/pages/broadcast/broadcast.service";
 import { UsersService } from "src/pages/users/users.service";
 
 @WebSocketGateway(8080, {
