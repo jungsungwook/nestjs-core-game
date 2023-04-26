@@ -5,13 +5,13 @@ import { MatchService } from './match.service';
 import { RedisCacheModule } from 'src/cache/redis.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([]),
-    AuthModule,
-    RedisCacheModule,
-  ],
-  controllers: [],
-  providers: [MatchService],
-  exports: [MatchService],
+    imports: [
+        TypeOrmModule.forFeature([]),
+        AuthModule,
+        RedisCacheModule,
+    ],
+    controllers: [],
+    providers: [MatchService],
+    exports: [MatchService],
 })
-export class MatchModule {}
+export class MatchModule { }
