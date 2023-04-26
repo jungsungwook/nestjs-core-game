@@ -84,6 +84,7 @@ export class Movement2dService {
                 }
             }
             await redisService.set(userCustomId+"_position", { x: newX, y: newY });
+            // 실시간으로 이동을 알림. //////////////////////////////
             server.emit(channel, {
                 player: userCustomId,
                 x: newX,
@@ -91,6 +92,7 @@ export class Movement2dService {
                 direction: key,
                 speed: speed
             });
+            ///////////////////////////////////////////////////////
         } catch (e) {
             throw new Error(e);
         }

@@ -77,6 +77,11 @@ export class PlayerGateway {
             if(check){
                 await this.redisService.del(client.id);
             }
+            const interval = await this.redisService.get(socketIdUpdate.contents.customId + "_interval");
+            if(interval){
+                clearInterval(interval);
+                await this.redisService.del(socketIdUpdate.contents.customId + "_interval");
+            }
         }
         catch(e){
             client.disconnect();
