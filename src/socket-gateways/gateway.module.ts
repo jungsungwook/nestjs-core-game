@@ -6,6 +6,8 @@ import { AuthModule } from 'src/auth/auth.module';
 import { BroadcastModule } from 'src/pages/users/broadcast/broadcast.module';
 import { Movement2dModule } from 'src/movement2d/movement2d.module';
 import { RedisCacheModule } from 'src/cache/redis.module';
+import { ChatModule } from 'src/pages/users/chat/chat.module';
+import { ChatGateWay } from './chat/gateway.chat';
 
 @Module({
     imports:[
@@ -14,10 +16,12 @@ import { RedisCacheModule } from 'src/cache/redis.module';
         BroadcastModule,
         Movement2dModule,
         RedisCacheModule,
+        ChatModule,
     ],
     providers: [
         CoreGateway,
-        PlayerGateway
+        PlayerGateway,
+        ChatGateWay,
     ],
 })
 export class GatewayModule { }
