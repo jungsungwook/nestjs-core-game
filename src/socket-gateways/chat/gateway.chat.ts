@@ -39,7 +39,8 @@ export class ChatGateWay {
                 timestamp: new Date().getTime(),
             }
             const chatLog: Object[] = await this.redisService.get('chatLog');
-            await this.redisService.set('chatLog', [...chatLog, returnObj]);
+            if(chatLog) await this.redisService.set('chatLog', [...chatLog, returnObj]);
+            else await this.redisService.set('chatLog', [returnObj]);
 
             this.server.emit('receive_chat', returnObj);
         } catch (err) {
