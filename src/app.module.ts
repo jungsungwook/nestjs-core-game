@@ -32,7 +32,7 @@ dotenv.config({ path: resolve(__dirname, '../.env') });
       username: process.env.DB_USER as string || 'abcd',
       password: process.env.DB_PASS,
       database: process.env.DB_DATABASE,
-      timezone: 'Z',
+      timezone: '+09:00',
       entities: [User,],
       synchronize: true,
     }),
