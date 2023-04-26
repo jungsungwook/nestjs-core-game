@@ -163,4 +163,25 @@ export class PlayerGateway {
             client.emit('error', e.message);
         }
     }
+
+    /**
+     * @Description
+     * 총알 발사~
+     */
+    @SubscribeMessage('shoot')
+    async handleShoot(
+        @MessageBody() data: { direction: string, key: string },
+        @ConnectedSocket() client: Socket,
+    ) {
+        try{
+            const userCustomId = await this.redisService.get(client.id);
+            if(!userCustomId) throw new Error('User not found');
+            if(!data.direction) throw new Error('Direction not found');
+            
+            
+
+        }catch(e){
+            client.emit('error', e.message);
+        }
+    }
 }
