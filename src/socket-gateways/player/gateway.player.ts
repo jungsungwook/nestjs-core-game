@@ -178,7 +178,7 @@ export class PlayerGateway {
             if(!userCustomId) throw new Error('User not found');
             if(!data.direction) throw new Error('Direction not found');
             
-            
+            await this.movemoent2dService.projectile_key(this.server, userCustomId, data.direction, data.key);
 
         }catch(e){
             client.emit('error', e.message);
