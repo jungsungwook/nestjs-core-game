@@ -19,34 +19,34 @@ export class Movement2dService {
      * @param key
      * @param isUp
      */
-    async move2d_key(server: Server, channel: string, userCustomId: any, key:any, isUp: boolean) {
+    async move2d_key(server: Server, channel: string, userCustomId: any, key: any, isUp: boolean) {
         try {
-            const { x, y } = await this.redisService.get(userCustomId+"_position");
+            const { x, y } = await this.redisService.get(userCustomId + "_position");
             let newX = x;
             let newY = y;
-            if(!isUp){
+            if (!isUp) {
                 // 전체 사용자들에게 이동을 알림. (현재 위치, 이동 방향, 이동 속도)
                 // 서버에서도 이동을 계산해서 위치를 업데이트.
-                const already = await this.redisService.get(userCustomId+"_interval");
-                if(already) return;
-                
-                const interval = setInterval(this.calculatePosition, 100, this.redisService, server, "position_start_test", userCustomId, key, isUp, newX ,newY, 1);
-                await this.redisService.set(userCustomId+"_interval", interval[Symbol.toPrimitive]() as number);
-                server.emit("position_start",{
+                const already = await this.redisService.get(userCustomId + "_interval");
+                if (already) return;
+
+                const interval = setInterval(this.calculatePosition, 100, this.redisService, server, "position_start_test", userCustomId, key, isUp, newX, newY, 1);
+                await this.redisService.set(userCustomId + "_interval", interval[Symbol.toPrimitive]() as number);
+                server.emit("position_start", {
                     player: userCustomId,
                     x: newX,
                     y: newY,
                     direction: key,
                     speed: 1
                 })
-            }else{
+            } else {
                 // 전체 사용자들에게 이동이 멈춤을 알림.( 서버에서 계산된 위치 )
                 // 서버에서도 이동을 계산해서 위치를 업데이트.
-                const interval : number = await this.redisService.get(userCustomId+"_interval");
+                const interval: number = await this.redisService.get(userCustomId + "_interval");
                 clearInterval(interval);
-                
-                await this.redisService.del(userCustomId+"_interval");
-                server.emit("position_stop",{
+
+                await this.redisService.del(userCustomId + "_interval");
+                server.emit("position_stop", {
                     player: userCustomId,
                     x: newX,
                     y: newY,
@@ -54,18 +54,18 @@ export class Movement2dService {
                 })
 
             }
-            await this.redisService.set(userCustomId+"_position", { x: newX, y: newY });
+            await this.redisService.set(userCustomId + "_position", { x: newX, y: newY });
         } catch (e) {
             throw new Error(e);
         }
     }
 
-    async calculatePosition(redisService: RedisCacheService ,server: Server, channel: string, userCustomId: any, key:any, isUp: boolean, speed: number) {
+    async calculatePosition(redisService: RedisCacheService, server: Server, channel: string, userCustomId: any, key: any, isUp: boolean, speed: number) {
         try {
-            const { x, y } = await redisService.get(userCustomId+"_position");
+            const { x, y } = await redisService.get(userCustomId + "_position");
             let newX = x;
             let newY = y;
-            if(!isUp){
+            if (!isUp) {
                 switch (key) {
                     case "s":
                         newY -= speed;
@@ -83,7 +83,7 @@ export class Movement2dService {
                         break;
                 }
             }
-            await redisService.set(userCustomId+"_position", { x: newX, y: newY });
+            await redisService.set(userCustomId + "_position", { x: newX, y: newY });
             // 실시간으로 이동을 알림. //////////////////////////////
             server.emit(channel, {
                 player: userCustomId,
@@ -112,8 +112,13 @@ export class Movement2dService {
                 direction: direction,
                 player: userCustomId
             });
-        } catch (e){
+        } catch (e) {
             throw new Error(e);
         }
+    }
+
+    async projectile_key(server: Server, userCustomId: any, key: string, direction: string) {
+        // 충돌 처리의 경우 서버에서 대략적인 좌표 계산을 하고, 클라이언트에서 충돌 신호를 받아서 처리.
+        // 단 한명의 클라이언트의 신호만 보냈을 경우 신뢰 하지 않고, 모든 플레이어에게 신호가 전달되었을 경우에만 처리.
     }
 }
