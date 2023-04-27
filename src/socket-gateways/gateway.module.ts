@@ -23,5 +23,10 @@ import { ChatGateWay } from './chat/gateway.chat';
         PlayerGateway,
         ChatGateWay,
     ],
+    exports: [
+        CoreGateway,
+        PlayerGateway,
+        ChatGateWay,
+    ],
 })
 export class GatewayModule { }
