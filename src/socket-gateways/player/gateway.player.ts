@@ -184,4 +184,20 @@ export class PlayerGateway {
             client.emit('error', e.message);
         }
     }
+
+    /**
+     * @Description
+     * 충돌 처리를 위한 리스너
+     */
+    @SubscribeMessage('collision')
+    async handleCollision(
+        @MessageBody() data: { type: string, id: string },
+        @ConnectedSocket() client: Socket,
+    ) {
+        try{
+            
+        }catch(e){
+            throw new Error(e);
+        }
+    }
 }

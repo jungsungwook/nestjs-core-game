@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Server, Socket } from "socket.io";
 import { RedisCacheService } from "src/cache/redis.service";
+import { generateSessionId } from "src/utils/util";
 
 /**
  * 2D 환경에서의 움직임을 처리하는 서비스
@@ -27,11 +28,11 @@ export class Movement2dService {
             if (!isUp) {
                 // 전체 사용자들에게 이동을 알림. (현재 위치, 이동 방향, 이동 속도)
                 // 서버에서도 이동을 계산해서 위치를 업데이트.
-                const already = await this.redisService.get(userCustomId + "_interval");
+                const already = await this.redisService.get(userCustomId + "_interval_"+key);
                 if (already) return;
 
-                const interval = setInterval(this.calculatePosition, 100, this.redisService, server, "position_start_test", userCustomId, key, isUp, newX, newY, 1);
-                await this.redisService.set(userCustomId + "_interval", interval[Symbol.toPrimitive]() as number);
+                const interval = setInterval(this.calculatePlayerPosition, 100, this.redisService, server, "position_start_test", userCustomId, key, isUp, newX, newY, 1);
+                await this.redisService.set(userCustomId + "_interval_"+key, interval[Symbol.toPrimitive]() as number);
                 server.emit("position_start", {
                     player: userCustomId,
                     x: newX,
@@ -42,10 +43,10 @@ export class Movement2dService {
             } else {
                 // 전체 사용자들에게 이동이 멈춤을 알림.( 서버에서 계산된 위치 )
                 // 서버에서도 이동을 계산해서 위치를 업데이트.
-                const interval: number = await this.redisService.get(userCustomId + "_interval");
+                const interval: number = await this.redisService.get(userCustomId + "_interval_"+key);
                 clearInterval(interval);
 
-                await this.redisService.del(userCustomId + "_interval");
+                await this.redisService.del(userCustomId + "_interval_"+key);
                 server.emit("position_stop", {
                     player: userCustomId,
                     x: newX,
@@ -60,7 +61,7 @@ export class Movement2dService {
         }
     }
 
-    async calculatePosition(redisService: RedisCacheService, server: Server, channel: string, userCustomId: any, key: any, isUp: boolean, speed: number) {
+    async calculatePlayerPosition(redisService: RedisCacheService, server: Server, channel: string, userCustomId: any, key: any, isUp: boolean, speed: number) {
         try {
             const { x, y } = await redisService.get(userCustomId + "_position");
             let newX = x;
@@ -120,5 +121,65 @@ export class Movement2dService {
     async projectile_key(server: Server, userCustomId: any, key: string, direction: string) {
         // 충돌 처리의 경우 서버에서 대략적인 좌표 계산을 하고, 클라이언트에서 충돌 신호를 받아서 처리.
         // 단 한명의 클라이언트의 신호만 보냈을 경우 신뢰 하지 않고, 모든 플레이어에게 신호가 전달되었을 경우에만 처리.
+        try{
+            const { x, y } = await this.redisService.get(userCustomId + "_position");
+            let projectileList = await this.redisService.get("projectile_list");
+            if(!projectileList) projectileList = [];
+            const randomId = generateSessionId();
+            await this.redisService.set("projectile_list", [...projectileList, randomId]);
+            const projectile = {
+                owner: userCustomId,
+                id: randomId,
+                x: x,
+                y: y,
+                direction: direction,
+                speed: 1,
+                intervalId: null,
+            }
+            const interval = setInterval(this.calculateProjectilePosition, 100, this.redisService, server, "position_start_test", userCustomId, key);
+            projectile.intervalId = interval[Symbol.toPrimitive]() as number;
+            await this.redisService.set("projectile_"+randomId, projectile);
+            server.emit("projectile_start", projectile);
+        }catch(e){
+            throw new Error(e);
+        }
+    }
+
+    async calculateProjectilePosition(redisService: RedisCacheService, server: Server, channel: string, projectileId: any, key: any, isUp: boolean, speed: number){
+        try {
+            const projectile = await redisService.get("projectile_"+projectileId);
+            let newX = projectile.x;
+            let newY = projectile.y;
+            if (!isUp) {
+                switch (key) {
+                    case "s":
+                        newY -= speed;
+                        break;
+                    case "w":
+                        newY += speed;
+                        break;
+                    case "a":
+                        newX -= speed;
+                        break;
+                    case "d":
+                        newX += speed;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            await redisService.set("projectile_"+projectileId, { ...projectile, x: newX, y: newY });
+            // 실시간으로 이동을 알림. //////////////////////////////
+            server.emit(channel, {
+                projectileId: projectileId,
+                x: newX,
+                y: newY,
+                direction: key,
+                speed: speed
+            });
+            ///////////////////////////////////////////////////////
+        } catch (e) {
+            throw new Error(e);
+        }
     }
 }
