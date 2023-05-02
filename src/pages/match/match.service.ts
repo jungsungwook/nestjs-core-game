@@ -1,0 +1,85 @@
+import { Injectable } from "@nestjs/common";
+import { Server, Socket } from "socket.io";
+import { RedisCacheService } from "src/cache/redis.service";
+import { MatchDto, MatchType } from "./dto/match.dto";
+import { generateSessionId } from "src/utils/util";
+
+@Injectable()
+export class MatchService {
+    constructor(
+        private redisService: RedisCacheService,
+    ) { }
+
+    async updateMatchQueue(matchType: MatchType, queue: MatchDto[]): Promise<void> {
+        try {
+            await this.redisService.set(matchType + "_queue", queue);
+        } catch (e) {
+            throw new Error(e);
+        }
+    }
+
+    async getMatchQueue(matchType: string): Promise<MatchDto[]> {
+        try {
+            const queue: MatchDto[] = await this.redisService.get(matchType + "_queue");
+            return queue;
+        }
+        catch (e) {
+            throw new Error(e);
+        }
+    }
+
+    // Cron 에서 유저를 다른 매치로 옮기는 작업을 수행할 때 사용한다.
+    async replaceMatchQueue(customIds: string[]): Promise<void> {
+        try {
+        }
+        catch (e) {
+            throw new Error(e);
+        }
+    }
+
+    async randomMatch_1on1_queue(customId: string) {
+        try {
+            const queue: MatchDto[] = await this.redisService.get(MatchType.RANDOM_MATCH_1ON1 + "_queue");
+
+            if (!queue) {
+                const newQueue: MatchDto[] = [];
+                const matchId = generateSessionId();
+                const newMatch: MatchDto = {
+                    match_id: matchId,
+                    match_type: "random_match_1on1",
+                    match_status: "waiting",
+                    match_start_time: new Date(),
+                    match_end_time: null,
+                    join_user: [customId],
+                };
+                newQueue.push(newMatch);
+                await this.redisService.set(MatchType.RANDOM_MATCH_1ON1 + "_queue", newQueue);
+                return newMatch;
+            }
+
+            const match: MatchDto = queue.find((match: MatchDto) => match.match_status === "waiting" && match.join_user.length < 2);
+            if (match) {
+                match.join_user.push(customId);
+                await this.redisService.set(MatchType.RANDOM_MATCH_1ON1 + "_queue", queue);
+                return match;
+            }
+        } catch (e) {
+            throw new Error(e);
+        }
+    }
+
+    async createMatch_1on1(socket: Socket, server: Server) {
+
+    }
+
+    async joinMatch_1on1(socket: Socket, server: Server) {
+
+    }
+
+    async leaveMatch_1on1(socket: Socket, server: Server) {
+    }
+
+    async getMatch_1on1(socket: Socket, server: Server) {
+
+    }
+}
