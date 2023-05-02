@@ -12,3 +12,10 @@ export enum MatchType {
     RANDOM_MATCH_1ON1 = "random_match_1on1",
     RANDOM_MATCH_2ON2 = "random_match_2on2"
 }
+
+export enum InfoType {
+    MATCH_CHANGE = "match_change",
+    MATCH_START = "match_start",
+    MATCH_SUCCESS = "match_success",
+    MATCH_CANCEL = "match_cancel"
+}

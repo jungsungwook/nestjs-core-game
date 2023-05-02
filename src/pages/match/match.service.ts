@@ -1,13 +1,17 @@
 import { Injectable } from "@nestjs/common";
 import { Server, Socket } from "socket.io";
 import { RedisCacheService } from "src/cache/redis.service";
-import { MatchDto, MatchType } from "./dto/match.dto";
+import { InfoType, MatchDto, MatchType } from "./dto/match.dto";
 import { generateSessionId } from "src/utils/util";
+import { MatchGateway } from "src/socket-gateways/match/gateway.match";
+import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class MatchService {
     constructor(
         private redisService: RedisCacheService,
+        private matchGateway: MatchGateway,
+        private usersService: UsersService,
     ) { }
 
     async updateMatchQueue(matchType: MatchType, queue: MatchDto[]): Promise<void> {
@@ -31,6 +35,11 @@ export class MatchService {
     // Cron 에서 유저를 다른 매치로 옮기는 작업을 수행할 때 사용한다.
     async replaceMatchQueue(customIds: string[]): Promise<void> {
         try {
+            customIds.forEach(async (customId: string) => {
+                const match = await this.randomMatch_1on1_queue(customId);
+                const socketId = (await this.usersService.getUser(customId)).contents.socketId;
+                await this.matchGateway.broadcastMatchinfo(InfoType.MATCH_CHANGE ,socketId, customId, match);
+            });
         }
         catch (e) {
             throw new Error(e);
