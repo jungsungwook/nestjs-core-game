@@ -88,12 +88,10 @@ export class SchedulerService {
         // 마지막으로 queue에서 해당 match를 삭제함.
         matches.forEach(element => {
             if(element.join_user.length === 2){
-                element.match_status = "matched";
                 // const socketIds = element.join_user.map((user) => user.socketId);
                 // this.gateway.sendToUsers(socketIds, "match", {
                 //     match: element
                 // });
-                queue.splice(queue.indexOf(element), 1);
             }else if(element.join_user.length > 2){
                 // 2. join_user가 2명 이상일 경우, 초과된 유저들을 따로 뺌.
                 // 그런 다음 join_user에 있는 유저들의 socketId를 가져와서 매칭된 유저들에게 매칭이 되었다는 메시지를 보냄.
@@ -104,8 +102,10 @@ export class SchedulerService {
                 // this.matchGateway.sendToUsers(socketIds, "match", {
                 //     match: element
                 // });
-                queue.splice(queue.indexOf(element), 1);
             }
+            element.match_status = "matched";
+            element.match_end_time = new Date();
+            queue.splice(queue.indexOf(element), 1);
         });
         await this.matchService.updateMatchQueue(MatchType.RANDOM_MATCH_1ON1, queue);
         
