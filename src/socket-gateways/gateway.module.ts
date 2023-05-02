@@ -8,6 +8,8 @@ import { Movement2dModule } from 'src/movement2d/movement2d.module';
 import { RedisCacheModule } from 'src/cache/redis.module';
 import { ChatModule } from 'src/pages/chat/chat.module';
 import { ChatGateWay } from './chat/gateway.chat';
+import { MatchModule } from 'src/pages/match/match.module';
+import { MatchGateway } from './match/gateway.match';
 
 @Module({
     imports:[
@@ -16,17 +18,20 @@ import { ChatGateWay } from './chat/gateway.chat';
         BroadcastModule,
         Movement2dModule,
         RedisCacheModule,
+        MatchModule,
         ChatModule,
     ],
     providers: [
         CoreGateway,
         PlayerGateway,
         ChatGateWay,
+        MatchGateway,
     ],
     exports: [
         CoreGateway,
         PlayerGateway,
         ChatGateWay,
+        MatchGateway,
     ],
 })
 export class GatewayModule { }

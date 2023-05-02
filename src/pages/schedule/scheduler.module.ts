@@ -5,6 +5,7 @@ import { SchedulerService } from './scheduler.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UsersModule } from '../users/users.module';
 import { GatewayModule } from 'src/socket-gateways/gateway.module';
+import { MatchModule } from '../match/match.module';
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { GatewayModule } from 'src/socket-gateways/gateway.module';
         AuthModule,
         UsersModule,
         GatewayModule,
+        MatchModule,
     ],
     controllers: [],
     providers: [SchedulerService],

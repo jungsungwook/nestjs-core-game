@@ -50,6 +50,7 @@ export class PlayerGateway {
         //     console.log('pong');
         // }, 5000);
         const reqHeaders = client.handshake.headers;
+        console.log(reqHeaders)
         // if(!reqHeaders.refreshToken) throw new Error('No refreshToken');
         try{
             const user = await this.userService.getUser(reqHeaders.refresh_token as string);
