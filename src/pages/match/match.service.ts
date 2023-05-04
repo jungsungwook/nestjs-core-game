@@ -41,7 +41,7 @@ export class MatchService {
             customIds.forEach(async (customId: string) => {
                 const match = await this.randomMatch_1on1_queue(customId);
                 const socketId = (await this.usersService.getUser(customId)).contents.socketId;
-                await this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_CHANGE ,socketId, customId, match);
+                await this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_CHANGE, socketId, customId, match);
             });
         }
         catch (e) {
@@ -51,6 +51,7 @@ export class MatchService {
 
     async randomMatch_1on1_queue(customId: string) {
         try {
+            const user = await this.usersService.getUserByCustomId(customId);
             const queue: MatchDto[] = await this.redisService.get(MatchType.RANDOM_MATCH_1ON1 + "_queue");
 
             if (!queue) {
@@ -66,6 +67,7 @@ export class MatchService {
                 };
                 newQueue.push(newMatch);
                 await this.redisService.set(MatchType.RANDOM_MATCH_1ON1 + "_queue", newQueue);
+                this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_START, user.contents.socketId, customId, newMatch);
                 return newMatch;
             }
 
@@ -73,8 +75,9 @@ export class MatchService {
             if (match) {
                 match.join_user.push(customId);
                 await this.redisService.set(MatchType.RANDOM_MATCH_1ON1 + "_queue", queue);
+                this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_START, user.contents.socketId, customId, match);
                 return match;
-            }else{
+            } else {
                 const matchId = generateSessionId();
                 const newMatch: MatchDto = {
                     match_id: matchId,
@@ -86,6 +89,7 @@ export class MatchService {
                 };
                 queue.push(newMatch);
                 await this.redisService.set(MatchType.RANDOM_MATCH_1ON1 + "_queue", queue);
+                this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_START, user.contents.socketId, customId, newMatch);
                 return newMatch;
             }
         } catch (e) {
