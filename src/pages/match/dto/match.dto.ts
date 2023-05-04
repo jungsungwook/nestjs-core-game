@@ -10,7 +10,8 @@ export class MatchDto {
 
 export enum MatchType {
     RANDOM_MATCH_1ON1 = "random_match_1on1",
-    RANDOM_MATCH_2ON2 = "random_match_2on2"
+    RANDOM_MATCH_2ON2 = "random_match_2on2",
+    CUSTOM_MATCH_1ON1 = "custom_match_1on1",
 }
 
 export enum MatchStatus {
