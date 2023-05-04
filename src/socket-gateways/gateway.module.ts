@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { CoreGateway } from './gateway.core';
 import { PlayerGateway } from './player/gateway.player';
 import { UsersModule } from 'src/pages/users/users.module';
@@ -18,7 +18,7 @@ import { MatchGateway } from './match/gateway.match';
         BroadcastModule,
         Movement2dModule,
         RedisCacheModule,
-        MatchModule,
+        forwardRef(() => MatchModule),
         ChatModule,
     ],
     providers: [
