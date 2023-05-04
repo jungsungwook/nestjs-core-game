@@ -59,7 +59,7 @@ export class MatchService {
                 const matchId = generateSessionId();
                 const newMatch: MatchDto = {
                     match_id: matchId,
-                    match_type: "random_match_1on1",
+                    match_type: MatchType.RANDOM_MATCH_1ON1,
                     match_status: MatchStatus.MATCH_START,
                     match_start_time: new Date(),
                     match_end_time: null,
@@ -81,7 +81,7 @@ export class MatchService {
                 const matchId = generateSessionId();
                 const newMatch: MatchDto = {
                     match_id: matchId,
-                    match_type: "random_match_1on1",
+                    match_type: MatchType.RANDOM_MATCH_1ON1,
                     match_status: MatchStatus.MATCH_START,
                     match_start_time: new Date(),
                     match_end_time: null,
