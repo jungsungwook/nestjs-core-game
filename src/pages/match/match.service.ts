@@ -59,7 +59,7 @@ export class MatchService {
                 const newMatch: MatchDto = {
                     match_id: matchId,
                     match_type: "random_match_1on1",
-                    match_status: "waiting",
+                    match_status: MatchStatus.MATCH_START,
                     match_start_time: new Date(),
                     match_end_time: null,
                     join_user: [customId],
@@ -69,11 +69,24 @@ export class MatchService {
                 return newMatch;
             }
 
-            const match: MatchDto = queue.find((match: MatchDto) => match.match_status === "waiting" && match.join_user.length < 2);
+            const match: MatchDto = queue.find((match: MatchDto) => match.match_status === MatchStatus.MATCH_START && match.join_user.length < 2);
             if (match) {
                 match.join_user.push(customId);
                 await this.redisService.set(MatchType.RANDOM_MATCH_1ON1 + "_queue", queue);
                 return match;
+            }else{
+                const matchId = generateSessionId();
+                const newMatch: MatchDto = {
+                    match_id: matchId,
+                    match_type: "random_match_1on1",
+                    match_status: MatchStatus.MATCH_START,
+                    match_start_time: new Date(),
+                    match_end_time: null,
+                    join_user: [customId],
+                };
+                queue.push(newMatch);
+                await this.redisService.set(MatchType.RANDOM_MATCH_1ON1 + "_queue", queue);
+                return newMatch;
             }
         } catch (e) {
             throw new Error(e);
