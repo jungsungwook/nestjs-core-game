@@ -119,20 +119,48 @@ export class MatchService {
                 join_user: [customId],
             }
             await this.redisService.push(MatchType.CUSTOM_MATCH_1ON1 + "_queue", match);
+            await this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_CREATE, user.contents.socketId, customId, match);
             return match;
         }catch(e){
             throw new Error(e);
         }
     }
 
-    async joinCustomMatch_1on1(socket: Socket, server: Server) {
-
+    async joinCustomMatch_1on1(matchId: string, customId: string) {
+        try{
+            const user = await this.usersService.getUserByCustomId(customId);
+            const user_status: UserInfo  = await this.redisService.get(customId + "_info");
+            if(
+                !user_status
+                || !user_status.status
+                || user_status.status == UserStatus.CUSTOM_MATCHING
+                || user_status.status == UserStatus.MATCHING_SUCCESS
+                || user_status.status == UserStatus.RANDOM_MATCHING
+                || user_status.status == UserStatus.OFFLINE
+            ) throw new Error("방에 참여할 수 없습니다.");
+            const match: MatchDto = await this.getCustomMatch_1on1(matchId);
+            if(!match) throw new Error("방이 존재하지 않습니다.");
+            if(match.join_user.length >= 2) throw new Error("방이 꽉 찼습니다.");
+            match.join_user.push(customId);
+            await this.redisService.set(MatchType.CUSTOM_MATCH_1ON1 + "_queue", match);
+            await this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_JOIN, user.contents.socketId, customId, match);
+            return match;
+        }catch(e){
+            throw new Error(e);
+        }
     }
 
     async leaveMatch_1on1(socket: Socket, server: Server) {
     }
 
-    async getCustomMatch_1on1(socket: Socket, server: Server) {
+    async getCustomMatches_1on1() {
+        const matches: MatchDto[] = await this.redisService.get(MatchType.CUSTOM_MATCH_1ON1 + "_queue");
+        return matches;
+    }
 
+    async getCustomMatch_1on1(matchId: string) {
+        const matches: MatchDto[] = await this.redisService.get(MatchType.CUSTOM_MATCH_1ON1 + "_queue");
+        const match: MatchDto = matches.find((match: MatchDto) => match.match_id === matchId);
+        return match;
     }
 }

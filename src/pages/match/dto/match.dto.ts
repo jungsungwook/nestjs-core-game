@@ -18,5 +18,7 @@ export enum MatchStatus {
     MATCH_CHANGE = "match_change",
     MATCH_START = "match_start",
     MATCH_SUCCESS = "match_success",
-    MATCH_CANCEL = "match_cancel"
+    MATCH_CANCEL = "match_cancel",
+    MATCH_CREATE = "match_create",
+    MATCH_JOIN = "match_join",
 }
