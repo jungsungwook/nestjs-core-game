@@ -1,11 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { Server, Socket } from "socket.io";
 import { RedisCacheService } from "src/cache/redis.service";
-import { InfoType, MatchDto, MatchType } from "./dto/match.dto";
+import { MatchStatus, MatchDto, MatchType } from "./dto/match.dto";
 import { generateSessionId } from "src/utils/util";
 import { MatchGateway } from "src/socket-gateways/match/gateway.match";
 import { UsersService } from "../users/users.service";
-
+/**
+ * @todo
+ * - 클라이언트에서 자신이 속한 매치 대기열을 요청할 수 있도록 함.
+ */
 @Injectable()
 export class MatchService {
     constructor(
@@ -38,7 +41,7 @@ export class MatchService {
             customIds.forEach(async (customId: string) => {
                 const match = await this.randomMatch_1on1_queue(customId);
                 const socketId = (await this.usersService.getUser(customId)).contents.socketId;
-                await this.matchGateway.broadcastMatchinfo(InfoType.MATCH_CHANGE ,socketId, customId, match);
+                await this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_CHANGE ,socketId, customId, match);
             });
         }
         catch (e) {
