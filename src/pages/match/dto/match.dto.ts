@@ -13,7 +13,7 @@ export enum MatchType {
     RANDOM_MATCH_2ON2 = "random_match_2on2"
 }
 
-export enum InfoType {
+export enum MatchStatus {
     MATCH_CHANGE = "match_change",
     MATCH_START = "match_start",
     MATCH_SUCCESS = "match_success",
