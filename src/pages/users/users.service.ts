@@ -76,4 +76,9 @@ export class UsersService {
     }
     return { statusCode: '200', contents: userObj };
   }
+
+  async getUserByCustomId(customId: string): Promise<{ statusCode: string, contents: User }> {
+    const userObj = await this.userRepository.findOne({ where: { customId: customId } });
+    return { statusCode: '200', contents: userObj };
+  }
 }
