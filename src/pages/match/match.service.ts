@@ -5,6 +5,7 @@ import { MatchStatus, MatchDto, MatchType } from "./dto/match.dto";
 import { generateSessionId } from "src/utils/util";
 import { MatchGateway } from "src/socket-gateways/match/gateway.match";
 import { UsersService } from "../users/users.service";
+import { UserInfo, UserStatus } from "../users/dto/user-info.dto";
 /**
  * @todo
  * - 클라이언트에서 자신이 속한 매치 대기열을 요청할 수 있도록 함.
@@ -97,18 +98,41 @@ export class MatchService {
         }
     }
 
-    async createMatch_1on1(socket: Socket, server: Server) {
-
+    async createCustomMatch_1on1(customId: string) {
+        try{
+            const user = await this.usersService.getUserByCustomId(customId);
+            const user_status: UserInfo  = await this.redisService.get(customId + "_info");
+            if(
+                !user_status
+                || !user_status.status
+                || user_status.status == UserStatus.CUSTOM_MATCHING
+                || user_status.status == UserStatus.MATCHING_SUCCESS
+                || user_status.status == UserStatus.RANDOM_MATCHING
+                || user_status.status == UserStatus.OFFLINE
+            ) throw new Error("방을 생성할 수 없습니다.");
+            const match : MatchDto = {
+                match_id: generateSessionId(),
+                match_type: MatchType.CUSTOM_MATCH_1ON1,
+                match_status: MatchStatus.MATCH_START,
+                match_start_time: new Date(),
+                match_end_time: null,
+                join_user: [customId],
+            }
+            await this.redisService.push(MatchType.CUSTOM_MATCH_1ON1 + "_queue", match);
+            return match;
+        }catch(e){
+            throw new Error(e);
+        }
     }
 
-    async joinMatch_1on1(socket: Socket, server: Server) {
+    async joinCustomMatch_1on1(socket: Socket, server: Server) {
 
     }
 
     async leaveMatch_1on1(socket: Socket, server: Server) {
     }
 
-    async getMatch_1on1(socket: Socket, server: Server) {
+    async getCustomMatch_1on1(socket: Socket, server: Server) {
 
     }
 }
