@@ -16,7 +16,11 @@ export class MatchController {
         @GetUser() user: User
     ) {
         try {
-            return await this.matchService.randomMatch_1on1_queue(user.customId);
+            const result = await this.matchService.randomMatch_1on1_queue(user.customId);
+            return {
+                statusCode: 200,
+                contents: result
+            }
         } catch (e) {
             throw new Error(e);
         }
@@ -28,7 +32,11 @@ export class MatchController {
         @GetUser() user: User
     ) {
         try {
-            return await this.matchService.createCustomMatch_1on1(user.customId);
+            const result = await this.matchService.createCustomMatch_1on1(user.customId);
+            return {
+                statusCode: 200,
+                contents: result
+            }
         } catch (e) {
             throw new Error(e);
         }
@@ -42,7 +50,11 @@ export class MatchController {
         @Param('matchId') matchId: string
     ) {
         try {
-            return await this.matchService.joinCustomMatch_1on1(matchId, user.customId);
+            const result = await this.matchService.joinCustomMatch_1on1(matchId, user.customId);
+            return {
+                statusCode: 200,
+                contents: result
+            }
         } catch (e) {
             throw new Error(e);
         }
@@ -51,7 +63,15 @@ export class MatchController {
     @Get('custom-matches')
     async getCustomMatch(
     ) {
-        return await this.matchService.getCustomMatches_1on1();
+        try {
+            const result = await this.matchService.getCustomMatches_1on1();
+            return {
+                statusCode: 200,
+                contents: result
+            }
+        } catch (e) {
+            throw new Error(e);
+        }
     }
 
     @Get('custom-match/:matchId')
@@ -59,7 +79,11 @@ export class MatchController {
         @Param('matchId') matchId: string
     ) {
         try {
-            return await this.matchService.getCustomMatch_1on1(matchId);
+            const result = await this.matchService.getCustomMatch_1on1(matchId);
+            return {
+                statusCode: 200,
+                contents: result
+            }
         } catch (e) {
             throw new Error(e);
         }
@@ -71,7 +95,11 @@ export class MatchController {
         @GetUser() user: User
     ) {
         try {
-            return await this.matchService.getMyMatchProgress("user.customId");
+            const result = await this.matchService.getMyMatchProgress("user.customId");
+            return {
+                statusCode: 200,
+                contents: result
+            }
         } catch (e) {
             throw new Error(e);
         }

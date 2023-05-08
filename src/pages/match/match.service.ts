@@ -174,17 +174,11 @@ export class MatchService {
                 if (matches) {
                     const match: MatchDto = matches.find((match: MatchDto) => match.join_user.includes(customId));
                     if (match) {
-                        return {
-                            "statusCode": 200,
-                            "contents": match,
-                        }
+                        return match;
                     }
                 }
             });
-            return {
-                "statusCode": 200,
-                "contents": null,
-            }
+            return null
         } catch (e) {
             throw new Error(e);
         }
