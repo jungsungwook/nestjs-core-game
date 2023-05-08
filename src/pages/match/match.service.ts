@@ -8,7 +8,9 @@ import { UsersService } from "../users/users.service";
 import { UserInfo, UserStatus } from "../users/dto/user-info.dto";
 /**
  * @todo
- * - 클라이언트에서 자신이 속한 매치 대기열을 요청할 수 있도록 함.
+ * @notice
+ * - 모든 대기열이나 방들은 Redis 에 저장되어야 한다.
+ * - 끝에 _queue 를 붙여서 저장한다.
  */
 @Injectable()
 export class MatchService {
@@ -99,10 +101,10 @@ export class MatchService {
     }
 
     async createCustomMatch_1on1(customId: string) {
-        try{
+        try {
             const user = await this.usersService.getUserByCustomId(customId);
-            const user_status: UserInfo  = await this.redisService.get(customId + "_info");
-            if(
+            const user_status: UserInfo = await this.redisService.get(customId + "_info");
+            if (
                 !user_status
                 || !user_status.status
                 || user_status.status == UserStatus.CUSTOM_MATCHING
@@ -110,7 +112,7 @@ export class MatchService {
                 || user_status.status == UserStatus.RANDOM_MATCHING
                 || user_status.status == UserStatus.OFFLINE
             ) throw new Error("방을 생성할 수 없습니다.");
-            const match : MatchDto = {
+            const match: MatchDto = {
                 match_id: generateSessionId(),
                 match_type: MatchType.CUSTOM_MATCH_1ON1,
                 match_status: MatchStatus.MATCH_START,
@@ -121,16 +123,16 @@ export class MatchService {
             await this.redisService.push(MatchType.CUSTOM_MATCH_1ON1 + "_queue", match);
             await this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_CREATE, user.contents.socketId, customId, match);
             return match;
-        }catch(e){
+        } catch (e) {
             throw new Error(e);
         }
     }
 
     async joinCustomMatch_1on1(matchId: string, customId: string) {
-        try{
+        try {
             const user = await this.usersService.getUserByCustomId(customId);
-            const user_status: UserInfo  = await this.redisService.get(customId + "_info");
-            if(
+            const user_status: UserInfo = await this.redisService.get(customId + "_info");
+            if (
                 !user_status
                 || !user_status.status
                 || user_status.status == UserStatus.CUSTOM_MATCHING
@@ -139,13 +141,13 @@ export class MatchService {
                 || user_status.status == UserStatus.OFFLINE
             ) throw new Error("방에 참여할 수 없습니다.");
             const match: MatchDto = await this.getCustomMatch_1on1(matchId);
-            if(!match) throw new Error("방이 존재하지 않습니다.");
-            if(match.join_user.length >= 2) throw new Error("방이 꽉 찼습니다.");
+            if (!match) throw new Error("방이 존재하지 않습니다.");
+            if (match.join_user.length >= 2) throw new Error("방이 꽉 찼습니다.");
             match.join_user.push(customId);
             await this.redisService.set(MatchType.CUSTOM_MATCH_1ON1 + "_queue", match);
             await this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_JOIN, user.contents.socketId, customId, match);
             return match;
-        }catch(e){
+        } catch (e) {
             throw new Error(e);
         }
     }
@@ -162,5 +164,23 @@ export class MatchService {
         const matches: MatchDto[] = await this.redisService.get(MatchType.CUSTOM_MATCH_1ON1 + "_queue");
         const match: MatchDto = matches.find((match: MatchDto) => match.match_id === matchId);
         return match;
+    }
+
+    async getMyMatchProgress(customId: string) {
+        try {
+            let match_type: string[] = Object.values(MatchType);
+            match_type.forEach(async (type: string) => {
+                const matches: MatchDto[] = await this.redisService.get(type + "_queue");
+                if (matches) {
+                    const match: MatchDto = matches.find((match: MatchDto) => match.join_user.includes(customId));
+                    if (match) {
+                        return match;
+                    }
+                }
+            });
+            return null
+        } catch (e) {
+            throw new Error(e);
+        }
     }
 }
