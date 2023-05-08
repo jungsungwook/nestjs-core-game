@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Controller, Get, HttpException, Param, Post, UseGuards } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { MatchService } from "./match.service";
 import { AuthGuard } from "@nestjs/passport";
@@ -32,7 +32,7 @@ export class MatchController {
                 contents: result
             }
         } catch (e) {
-            throw new Error(e);
+            throw new HttpException(e.message, e.status);
         }
     }
 
@@ -57,7 +57,7 @@ export class MatchController {
                 contents: result
             }
         } catch (e) {
-            throw new Error(e);
+            throw new HttpException(e.message, e.status);
         }
 
     }
@@ -84,7 +84,7 @@ export class MatchController {
                 contents: result
             }
         } catch (e) {
-            throw new Error(e);
+            throw new HttpException(e.message, e.status);
         }
     }
 
@@ -121,7 +121,7 @@ export class MatchController {
                 contents: result
             }
         } catch (e) {
-            throw new Error(e);
+            throw new HttpException(e.message, e.status);
         }
     }
 
@@ -146,7 +146,7 @@ export class MatchController {
                 contents: result
             }
         } catch (e) {
-            throw new Error(e);
+            throw new HttpException(e.message, e.status);
         }
     }
 }
