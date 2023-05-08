@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { Server, Socket } from "socket.io";
 import { RedisCacheService } from "src/cache/redis.service";
 import { MatchStatus, MatchDto, MatchType } from "./dto/match.dto";
@@ -157,11 +157,13 @@ export class MatchService {
 
     async getCustomMatches_1on1() {
         const matches: MatchDto[] = await this.redisService.get(MatchType.CUSTOM_MATCH_1ON1 + "_queue");
+        if(!matches) return [];
         return matches;
     }
 
     async getCustomMatch_1on1(matchId: string) {
         const matches: MatchDto[] = await this.redisService.get(MatchType.CUSTOM_MATCH_1ON1 + "_queue");
+        if(!matches) throw new HttpException("방이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
         const match: MatchDto = matches.find((match: MatchDto) => match.match_id === matchId);
         return match;
     }
