@@ -1,4 +1,4 @@
-import { Body, Controller, Post, ValidationPipe, UseGuards, UseInterceptors, Get, Req, Res } from '@nestjs/common';
+import { Body, Controller, Post, ValidationPipe, UseGuards, UseInterceptors, Get, Req, Res, HttpException } from '@nestjs/common';
 import { User } from 'src/pages/users/user.entity';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -34,10 +34,7 @@ export class AuthController {
             });
             return result;
         }catch(error){
-            const result:DefaultResponseDto = new DefaultResponseDto();
-            result.statusCode = "401";
-            result.contents = error.message;
-            return result;
+            throw new HttpException(error.message, 401);
         }
     }
 
@@ -67,10 +64,7 @@ export class AuthController {
                 },
             };
         }catch(error){
-            const result:DefaultResponseDto = new DefaultResponseDto();
-            result.statusCode = "404";
-            result.contents = error.message;
-            return result;
+            throw new HttpException(error.message, 404);
         }
     }
 
@@ -91,10 +85,7 @@ export class AuthController {
                 contents: "로그아웃 성공",
             };
         }catch(error){
-            const result:DefaultResponseDto = new DefaultResponseDto();
-            result.statusCode = "500";
-            result.contents = error.message;
-            return result;
+            throw new HttpException(error.message, 500);
         }
     }
 
@@ -114,10 +105,7 @@ export class AuthController {
                 contents: accessToken,
             };
         }catch(error){
-            const result:DefaultResponseDto = new DefaultResponseDto();
-            result.statusCode = "500";
-            result.contents = error.message;
-            return result;
+            throw new HttpException(error.message, 401);
         }
     }
 
@@ -140,10 +128,7 @@ export class AuthController {
                 },
             };
         }catch(error){
-            const result:DefaultResponseDto = new DefaultResponseDto();
-            result.statusCode = "500";
-            result.contents = error.message;
-            return result;
+            throw new HttpException(error.message, 500);
         }
     }
 }
