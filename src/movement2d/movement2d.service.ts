@@ -30,7 +30,7 @@ export class Movement2dService {
                 const already = await this.redisService.get(userCustomId+"_interval");
                 if(already) return;
                 
-                const interval = setInterval(this.calculatePosition, 100, this.redisService, server, "position_start_test", userCustomId, key, isUp, newX ,newY, 1);
+                const interval = setInterval(this.calculatePosition, 100, this.redisService, server, channel, userCustomId, key, isUp, 5);
                 await this.redisService.set(userCustomId+"_interval", interval[Symbol.toPrimitive]() as number);
                 server.emit("position_start",{
                     player: userCustomId,
