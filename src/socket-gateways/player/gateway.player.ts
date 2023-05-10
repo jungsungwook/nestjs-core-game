@@ -39,6 +39,11 @@ export class PlayerGateway {
     @WebSocketServer()
     server: Server;
 
+    /**
+     * 
+     * @todo
+     * - 다중 클라이언트 접속 시 처리 
+     */
     async handleConnection(client: Socket) {
         // const test = setInterval(async () => {
         //     console.log('ping');
@@ -50,10 +55,14 @@ export class PlayerGateway {
         //     console.log('pong');
         // }, 5000);
         const reqHeaders = client.handshake.headers;
-        console.log(reqHeaders)
+
+        let refreshToken = '';
+        if(reqHeaders.refresh_token) refreshToken = reqHeaders.refresh_token as string;
+        else refreshToken = client.handshake.auth.refresh_token as string;
+
         // if(!reqHeaders.refreshToken) throw new Error('No refreshToken');
         try{
-            const user = await this.userService.getUser(reqHeaders.refresh_token as string);
+            const user = await this.userService.getUser(refreshToken);
             if(user.statusCode == '404') throw new Error('User not found');
             const userObj = user.contents;
             const socketId = client.id;
@@ -70,6 +79,10 @@ export class PlayerGateway {
 
     async handleDisconnect(client: Socket) {
         const reqHeaders = client.handshake.headers;
+        let refreshToken = '';
+        if(reqHeaders.refresh_token) refreshToken = reqHeaders.refresh_token as string;
+        else refreshToken = client.handshake.auth.refresh_token as string;
+
         try{
             const socketIdUpdate = await this.userService.disconnectSocketId(client.id);
             if(socketIdUpdate.statusCode == '404') throw new Error('User not found');
@@ -130,7 +143,7 @@ export class PlayerGateway {
         try{
             const userCustomId = await this.redisService.get(client.id);
             if(!userCustomId) throw new Error('User not found');
-            if(!data.x || !data.y) throw new Error('Position not found');
+            if(data.x == undefined || data.y == undefined) throw new Error('Position not found');
             if(!data.session_id) throw new Error('Session id not found');
             const session_data = await this.redisService.get(data.session_id);
             if(!session_data||session_data.clientId != client.id) throw new Error('Invalid session');
