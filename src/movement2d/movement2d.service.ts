@@ -25,27 +25,41 @@ export class Movement2dService {
             let newX = x;
             let newY = y;
             if(!isUp){
+                switch (key) {
+                    case "s":
+                        newY -= 5;
+                        break;
+                    case "w":
+                        newY += 5;
+                        break;
+                    case "a":
+                        newX -= 5;
+                        break;
+                    case "d":
+                        newX += 5;
+                        break;
+                }
                 // 전체 사용자들에게 이동을 알림. (현재 위치, 이동 방향, 이동 속도)
                 // 서버에서도 이동을 계산해서 위치를 업데이트.
-                const already = await this.redisService.get(userCustomId+"_interval");
+                const already = await this.redisService.get(userCustomId+"_interval_"+key);
                 if(already) return;
                 
                 const interval = setInterval(this.calculatePosition, 100, this.redisService, server, channel, userCustomId, key, isUp, 5);
-                await this.redisService.set(userCustomId+"_interval", interval[Symbol.toPrimitive]() as number);
+                await this.redisService.set(userCustomId+"_interval_"+key, interval[Symbol.toPrimitive]() as number);
                 server.emit("position_start",{
                     player: userCustomId,
                     x: newX,
                     y: newY,
                     direction: key,
-                    speed: 1
+                    speed: 5
                 })
             }else{
                 // 전체 사용자들에게 이동이 멈춤을 알림.( 서버에서 계산된 위치 )
                 // 서버에서도 이동을 계산해서 위치를 업데이트.
-                const interval : number = await this.redisService.get(userCustomId+"_interval");
+                const interval : number = await this.redisService.get(userCustomId+"_interval_"+key);
                 clearInterval(interval);
                 
-                await this.redisService.del(userCustomId+"_interval");
+                await this.redisService.del(userCustomId+"_interval_"+key);
                 server.emit("position_stop",{
                     player: userCustomId,
                     x: newX,
