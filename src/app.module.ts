@@ -9,6 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { AuthTokenMiddleware } from './auth/authToken.middleware';
 import { UsersModule } from './pages/users/users.module';
 import { User } from './pages/users/user.entity';
+import { SchedulerModule } from './pages/schedule/scheduler.module';
+import { MatchModule } from './pages/match/match.module';
 
 dotenv.config({ path: resolve(__dirname, '../.env') });
 
@@ -32,13 +34,15 @@ dotenv.config({ path: resolve(__dirname, '../.env') });
       username: process.env.DB_USER as string || 'abcd',
       password: process.env.DB_PASS,
       database: process.env.DB_DATABASE,
-      timezone: 'Z',
+      timezone: '+09:00',
       entities: [User,],
       synchronize: true,
     }),
     GatewayModule,
     UsersModule,
     AuthModule,
+    SchedulerModule,
+    MatchModule,
   ],
 })
 export class AppModule {

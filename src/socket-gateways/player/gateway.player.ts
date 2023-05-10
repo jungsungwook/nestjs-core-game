@@ -8,7 +8,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/pages/users/users.service';
 import { Movement2dService } from 'src/movement2d/movement2d.service';
-import { BroadcastService } from 'src/pages/users/broadcast/broadcast.service';
+import { BroadcastService } from 'src/pages/broadcast/broadcast.service';
 import { RedisCacheService } from 'src/cache/redis.service';
 import { generateSessionId } from 'src/utils/util';
 /**
@@ -55,9 +55,11 @@ export class PlayerGateway {
         //     console.log('pong');
         // }, 5000);
         const reqHeaders = client.handshake.headers;
+
         let refreshToken = '';
         if(reqHeaders.refresh_token) refreshToken = reqHeaders.refresh_token as string;
         else refreshToken = client.handshake.auth.refresh_token as string;
+
         // if(!reqHeaders.refreshToken) throw new Error('No refreshToken');
         try{
             const user = await this.userService.getUser(refreshToken);

@@ -20,4 +20,22 @@ export class RedisCacheService {
     async del(key: string) {
         await this.cache.del(key);
     }
+
+    async concat(key: string, value: any[]) {
+        const data : any[] = await this.get(key);
+        if (data) {
+            await this.set(key, data.concat(value));
+        }else{
+            await this.set(key, [value]);
+        }
+    }
+
+    async push(key: string, value: any) {
+        const data : any[] = await this.get(key);
+        if (data) {
+            await this.set(key, data.push(value));
+        }else{
+            await this.set(key, [value]);
+        }
+    }
 }

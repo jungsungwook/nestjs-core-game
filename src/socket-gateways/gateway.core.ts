@@ -4,7 +4,7 @@ import {
     WebSocketGateway,
     WebSocketServer,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway(8080, { 
     transports: ['websocket'] ,
@@ -26,5 +26,10 @@ export class CoreGateway {
     @SubscribeMessage('ping')
     async handlePing(@MessageBody() data) {
         this.server.emit('pong', 'pong');
+    }
+
+    async getClients(){
+        const socket = this.server.sockets.sockets;
+        return socket;
     }
 }
