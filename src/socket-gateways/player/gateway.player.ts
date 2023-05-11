@@ -70,6 +70,40 @@ export class PlayerGateway {
             if(socketIdUpdate.statusCode == '404') throw new Error('User not found');
             await this.redisService.set(socketId, userObj.customId);
             console.log('PlayerGateway: ' + userObj.customId + ' connected');
+
+            // 유저 정보 broadcast
+            const {x , y} = await this.redisService.get(userObj.customId + "_position") || {x: 0, y: 0};
+            // connection to socket
+            const otherUsers = await this.userService.getConnectedUser();
+            const otherPlayerInfo : {
+                customId: string,
+                x: number,
+                y: number,
+            }[] = [];
+            for(let i = 0; i < otherUsers.contents.length; i++){
+                const {customId} = otherUsers.contents[i];
+                if(customId == userObj.customId) continue;
+                const {x, y} = await this.redisService.get(customId + "_position") || {x: 0, y: 0};
+                otherPlayerInfo.push({
+                    customId: customId,
+                    x: x,
+                    y: y,
+                });
+            }
+            client.emit("connection", {
+                myInfo: {
+                    customId : userObj.customId,
+                    x: x,
+                    y: y,
+                },
+                otherPlayer : otherPlayerInfo,
+            });
+
+            await this.broadcastService.serverBroadcast(this.server, 'enter_lobby', {
+                player: userObj.customId,
+                x: x,
+                y: y,
+            });
         }
         catch(e){
             console.log(e);
@@ -91,12 +125,18 @@ export class PlayerGateway {
             if(check){
                 await this.redisService.del(client.id);
             }
-            const interval = await this.redisService.get(socketIdUpdate.contents.customId + "_interval");
-            if(interval){
-                clearInterval(interval);
-                await this.redisService.del(socketIdUpdate.contents.customId + "_interval");
-            }
-        }
+            ['w','a','s','d'].forEach(async (key) => {
+                const interval = await this.redisService.get(socketIdUpdate.contents.customId + "_interval_" + key);
+
+                if(interval){
+                    clearInterval(interval);
+                    await this.redisService.del(socketIdUpdate.contents.customId + "_interval_" + key);
+                }
+            });
+            await this.broadcastService.serverBroadcast(this.server, 'disconnection', {
+                player: socketIdUpdate.contents.customId,
+            });
+        }       
         catch(e){
             client.disconnect();
         }
