@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
-import { EntityManager } from 'typeorm';
+import { EntityManager, IsNull, Not } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
@@ -79,6 +79,12 @@ export class UsersService {
 
   async getUserByCustomId(customId: string): Promise<{ statusCode: string, contents: User }> {
     const userObj = await this.userRepository.findOne({ where: { customId: customId } });
+    return { statusCode: '200', contents: userObj };
+  }
+
+  async getConnectedUser(): Promise<{ statusCode: string, contents: User[] }> {
+    //socketId가 null이 아닌 유저들을 가져온다.
+    const userObj = await this.userRepository.find({ where: { socketId: Not(IsNull()) } });
     return { statusCode: '200', contents: userObj };
   }
 }
