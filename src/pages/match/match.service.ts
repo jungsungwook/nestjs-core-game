@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { Server, Socket } from "socket.io";
 import { RedisCacheService } from "src/cache/redis.service";
-import { MatchStatus, MatchDto, MatchType } from "./dto/match.dto";
+import { MatchStatus, MatchDto, MatchType, MatchCreateDto, MatchJoinDto, CustomMatchDto } from "./dto/match.dto";
 import { generateSessionId } from "src/utils/util";
 import { MatchGateway } from "src/socket-gateways/match/gateway.match";
 import { UsersService } from "../users/users.service";
@@ -100,7 +100,7 @@ export class MatchService {
         }
     }
 
-    async createCustomMatch_1on1(customId: string) {
+    async createCustomMatch(customId: string, dto: MatchCreateDto) {
         try {
             const user = await this.usersService.getUserByCustomId(customId);
             const user_status: UserInfo = await this.redisService.get(customId + "_info");
@@ -112,15 +112,20 @@ export class MatchService {
                 || user_status.status == UserStatus.RANDOM_MATCHING
                 || user_status.status == UserStatus.OFFLINE
             ) throw new Error("방을 생성할 수 없습니다.");
-            const match: MatchDto = {
+            const match: CustomMatchDto = {
                 match_id: generateSessionId(),
-                match_type: MatchType.CUSTOM_MATCH_1ON1,
+                match_type: dto.match_type,
                 match_status: MatchStatus.MATCH_START,
                 match_start_time: new Date(),
                 match_end_time: null,
                 join_user: [customId],
+                match_title: dto.match_title,
+                match_private: dto.match_private,
+                match_owner: customId,
             }
-            await this.redisService.push(MatchType.CUSTOM_MATCH_1ON1 + "_queue", match);
+            if(match.match_private) match.match_password = dto.match_password;
+            
+            await this.redisService.push(dto.match_type + "_queue", match);
             await this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_CREATE, user.contents.socketId, customId, match);
             return match;
         } catch (e) {
@@ -128,7 +133,7 @@ export class MatchService {
         }
     }
 
-    async joinCustomMatch_1on1(matchId: string, customId: string) {
+    async joinCustomMatch(body: MatchJoinDto, customId: string) {
         try {
             const user = await this.usersService.getUserByCustomId(customId);
             const user_status: UserInfo = await this.redisService.get(customId + "_info");
@@ -140,11 +145,14 @@ export class MatchService {
                 || user_status.status == UserStatus.RANDOM_MATCHING
                 || user_status.status == UserStatus.OFFLINE
             ) throw new Error("방에 참여할 수 없습니다.");
-            const match: MatchDto = await this.getCustomMatch_1on1(matchId);
+            const match: CustomMatchDto = await this.getCustomMatch(body.match_id);
             if (!match) throw new Error("방이 존재하지 않습니다.");
             if (match.join_user.length >= 2) throw new Error("방이 꽉 찼습니다.");
+            if (match.match_private){
+                if (match.match_password != body.match_password) throw new Error("비밀번호가 틀렸습니다.");
+            }
             match.join_user.push(customId);
-            await this.redisService.set(MatchType.CUSTOM_MATCH_1ON1 + "_queue", match);
+            await this.redisService.set(match.match_type + "_queue", match);
             await this.matchGateway.broadcastMatchinfo(MatchStatus.MATCH_JOIN, user.contents.socketId, customId, match);
             return match;
         } catch (e) {
@@ -155,16 +163,25 @@ export class MatchService {
     async leaveMatch_1on1(socket: Socket, server: Server) {
     }
 
-    async getCustomMatches_1on1() {
-        const matches: MatchDto[] = await this.redisService.get(MatchType.CUSTOM_MATCH_1ON1 + "_queue");
+    async getCustomMatches() {
+        const matches: MatchDto[] = [];
+        for (const type in MatchType) {
+            const match: MatchDto[] = await this.redisService.get(type + "_queue");
+            if(match) matches.push(...match);
+        }
+
         if(!matches) return [];
         return matches;
     }
 
-    async getCustomMatch_1on1(matchId: string) {
-        const matches: MatchDto[] = await this.redisService.get(MatchType.CUSTOM_MATCH_1ON1 + "_queue");
+    async getCustomMatch(matchId: string): Promise<CustomMatchDto> {
+        const matches: CustomMatchDto[] = [];
+        for (const type in MatchType) {
+            const match: CustomMatchDto[] = await this.redisService.get(type + "_queue");
+            if(match) matches.push(...match);
+        }
         if(!matches) throw new HttpException("방이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
-        const match: MatchDto = matches.find((match: MatchDto) => match.match_id === matchId);
+        const match: CustomMatchDto = matches.find((match: CustomMatchDto) => match.match_id === matchId);
         return match;
     }
 
