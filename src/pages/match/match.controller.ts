@@ -1,10 +1,10 @@
-import { Controller, Get, HttpException, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpException, Param, Post, UseGuards } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { MatchService } from "./match.service";
 import { AuthGuard } from "@nestjs/passport";
 import { GetUser } from "src/auth/get-user.decorator";
 import { User } from "../users/user.entity";
-import { DefaultResponseMatchDto, MatchDto } from "./dto/match.dto";
+import { DefaultResponseMatchDto, MatchCreateDto, MatchDto, MatchJoinDto } from "./dto/match.dto";
 
 @Controller('match')
 @ApiTags('매칭')
@@ -36,22 +36,23 @@ export class MatchController {
         }
     }
 
-    @Post('create-custom-match-1on1')
+    @Post('create-custom-match')
     @ApiOperation({
-        summary: '커스텀 매칭 1:1 생성',
-        description: '커스텀 매칭 1:1을 생성합니다.'
+        summary: '커스텀 매칭생성',
+        description: '커스텀 매칭을 생성합니다.'
     })
     @ApiResponse({
-        description: '커스텀 매칭 1:1 생성 성공',
+        description: '커스텀 매칭 생성 성공',
         type: DefaultResponseMatchDto,
         status: 200
     })
     @UseGuards(AuthGuard("jwt"))
     async createMatch_1on1(
-        @GetUser() user: User
+        @GetUser() user: User,
+        @Body() body:MatchCreateDto
     ): Promise<DefaultResponseMatchDto> {
         try {
-            const result = await this.matchService.createCustomMatch_1on1(user.customId);
+            const result = await this.matchService.createCustomMatch(user.customId, body);
             return {
                 statusCode: 200,
                 contents: result
@@ -62,23 +63,23 @@ export class MatchController {
 
     }
 
-    @Post('join-custom-match-1on1/:matchId')
+    @Post('join-custom-match')
     @ApiOperation({
-        summary: '커스텀 매칭 1:1 참가',
-        description: '커스텀 매칭 1:1에 참가합니다.'
+        summary: '커스텀 매칭 참가',
+        description: '커스텀 매칭에 참가합니다.'
     })
     @ApiResponse({
-        description: '커스텀 매칭 1:1 참가 성공',
+        description: '커스텀 매칭 참가 성공',
         type: DefaultResponseMatchDto,
         status: 200
     })
     @UseGuards(AuthGuard("jwt"))
     async joinMatch_1on1(
         @GetUser() user: User,
-        @Param('matchId') matchId: string
+        @Body() body: MatchJoinDto
     ): Promise<DefaultResponseMatchDto> {
         try {
-            const result = await this.matchService.joinCustomMatch_1on1(matchId, user.customId);
+            const result = await this.matchService.joinCustomMatch(body, user.customId);
             return {
                 statusCode: 200,
                 contents: result
@@ -96,7 +97,7 @@ export class MatchController {
     async getCustomMatch(
     ) {
         try {
-            const result = await this.matchService.getCustomMatches_1on1();
+            const result = await this.matchService.getCustomMatches();
             return {
                 statusCode: 200,
                 contents: result
@@ -115,7 +116,7 @@ export class MatchController {
         @Param('matchId') matchId: string
     ): Promise<DefaultResponseMatchDto> {
         try {
-            const result = await this.matchService.getCustomMatch_1on1(matchId);
+            const result = await this.matchService.getCustomMatch(matchId);
             return {
                 statusCode: 200,
                 contents: result
@@ -140,7 +141,7 @@ export class MatchController {
         @GetUser() user: User
     ): Promise<DefaultResponseMatchDto> {
         try {
-            const result = await this.matchService.getMyMatchProgress("user.customId");
+            const result = await this.matchService.getMyMatchProgress(user.customId);
             return {
                 statusCode: 200,
                 contents: result
