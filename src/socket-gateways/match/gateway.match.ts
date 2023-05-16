@@ -1,6 +1,6 @@
 import { WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server } from "socket.io";
-import { MatchStatus, MatchDto } from "src/pages/match/dto/match.dto";
+import { MatchStatus, MatchDto, CustomMatchDto } from "src/pages/match/dto/match.dto";
 
 @WebSocketGateway(8080, {
     transports: ['websocket'],
@@ -17,7 +17,7 @@ export class MatchGateway {
         info_type: MatchStatus,
         socketId: string,
         userId: string,
-        matchInfo: MatchDto
+        matchInfo: MatchDto | CustomMatchDto
     ) {
         this.server.to(socketId).emit(info_type, {
             userId: userId,
