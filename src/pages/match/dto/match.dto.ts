@@ -11,13 +11,13 @@ export class MatchDto {
         description: '매치 타입',
         example: 'random_match_1on1',
     })
-    match_type: string;
+    match_type: MatchType;
 
     @ApiProperty({
         description: '매치 상태',
         example: 'match_change',
     })
-    match_status: string;
+    match_status: MatchStatus;
 
     @ApiProperty({
         description: '매치 생성 시간',
@@ -44,6 +44,32 @@ export class MatchDto {
     join_user: string[];
 }
 
+export class CustomMatchDto extends MatchDto {
+    @ApiProperty({
+        description: '방 제목',
+        example: '랜덤 매칭 1:1',
+    })
+    match_title: string;
+
+    @ApiProperty({
+        description: '방 비밀번호',
+        example: '1234',
+    })
+    match_password?: string;
+
+    @ApiProperty({
+        description: '비밀 방 여부',
+        example: true,
+    })
+    match_private: boolean;
+
+    @ApiProperty({
+        description: '방장 유저',
+        example: 'jswcyber',
+    })
+    match_owner: string;
+}
+
 export class DefaultResponseMatchDto {
     @ApiProperty({
         description: '응답 코드',
@@ -55,6 +81,52 @@ export class DefaultResponseMatchDto {
         description: '전달 데이터'
     })
     contents: MatchDto;
+}
+
+export class MatchCreateDto {
+    @ApiProperty({
+        description: '매치 타입',
+        example: 'random_match_1on1',
+    })
+    match_type: MatchType;
+
+    @ApiProperty({
+        description: '방 제목',
+        example: '랜덤 매칭 1:1',
+    })
+    match_title: string;
+
+    @ApiProperty({
+        description: '방 비밀번호',
+        example: '1234',
+    })
+    match_password?: string;
+
+    @ApiProperty({
+        description: '비밀 방 여부',
+        example: true,
+    })
+    match_private: boolean;
+}
+
+export class MatchJoinDto {
+    @ApiProperty({
+        description: '매치 ID',
+        example: '1234567890',
+    })
+    match_id: string;
+
+    @ApiProperty({
+        description: '매치 타입',
+        example: 'random_match_1on1',
+    })
+    match_type: MatchType;
+
+    @ApiProperty({
+        description: '방 비밀번호',
+        example: '1234',
+    })
+    match_password: string;
 }
 
 export enum MatchType {
